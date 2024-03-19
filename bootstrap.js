@@ -9,7 +9,7 @@ import {
 const main = async () => {
     await init();
     initPanicHook();
-    // await initThreadPool(2);
+    await initThreadPool(2);
     const halo2wasm = new Halo2Wasm();
     const myCircuit = new MyCircuit(halo2wasm);
     myCircuit.run();
