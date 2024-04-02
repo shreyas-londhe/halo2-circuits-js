@@ -21,6 +21,51 @@ export default function Home() {
         }
     };
 
+    const fetchAndConvertToUint8Array = (url) => {
+        return new Promise((resolve, reject) => {
+            // Check if running in Node.js environment
+            if (
+                typeof process !== "undefined" &&
+                process.versions &&
+                process.versions.node
+            ) {
+                const https = require("https");
+                https.get(url, (res) => {
+                    let chunks = [];
+                    res.on("data", (chunk) => chunks.push(chunk));
+                    res.on("end", () => {
+                        let binaryData = Buffer.concat(chunks);
+                        resolve(new Uint8Array(binaryData));
+                    });
+                    res.on("error", reject);
+                });
+            }
+            // Check if running in browser or web worker environment
+            else if (
+                typeof window !== "undefined" ||
+                typeof self !== "undefined"
+            ) {
+                fetch(url)
+                    .then((response) => response.arrayBuffer())
+                    .then((buffer) => {
+                        resolve(new Uint8Array(buffer));
+                    })
+                    .catch(reject);
+            } else {
+                reject(new Error("Environment not supported"));
+            }
+        });
+    };
+
+    const getKzgParams = async (k) => {
+        if (k < 6 || k > 19) {
+            throw new Error(`k=${k} is not supported`);
+        }
+        return await fetchAndConvertToUint8Array(
+            `https://axiom-crypto.s3.amazonaws.com/challenge_0085/kzg_bn254_${k}.srs`
+        );
+    };
+
     const runMain = async () => {
         setIsRunning(true);
         try {
@@ -45,8 +90,32 @@ export default function Home() {
             myCircuit.run();
             console.log("MyCircuit run method called");
 
+            halo2wasm.config({
+                k: 15,
+                numAdvice: 1,
+                numLookupAdvice: 1,
+                numInstance: 1,
+                numLookupBits: 14,
+                numVirtualInstance: 1,
+            });
+
             let stats = halo2wasm.getCircuitStats();
             console.log("Circuit stats:", stats);
+
+            let params = await getKzgParams(15);
+            console.log("KZG params:", params);
+
+            halo2wasm.loadParams(params);
+            console.log("KZG params loaded");
+
+            halo2wasm.genVk();
+            console.log("Verification key generated");
+
+            halo2wasm.genPk();
+            console.log("Proving key generated");
+
+            let proof = halo2wasm.prove();
+            console.log("Proof generated:", proof);
 
             // Call any other necessary functions or operations
 
