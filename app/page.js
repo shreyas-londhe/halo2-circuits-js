@@ -87,8 +87,6 @@ export default function Home() {
             console.log("Halo2Wasm instance created");
             const myCircuit = new MyCircuit(halo2wasm);
             console.log("MyCircuit instance created");
-            myCircuit.run();
-            console.log("MyCircuit run method called");
 
             halo2wasm.config({
                 k: 15,
@@ -98,6 +96,10 @@ export default function Home() {
                 numLookupBits: 14,
                 numVirtualInstance: 1,
             });
+            console.log("Halo2Wasm configured");
+
+            myCircuit.run();
+            console.log("MyCircuit run method called");
 
             let stats = halo2wasm.getCircuitStats();
             console.log("Circuit stats:", stats);
@@ -116,6 +118,12 @@ export default function Home() {
 
             let proof = halo2wasm.prove();
             console.log("Proof generated:", proof);
+
+            halo2wasm.mock();
+            console.log("Mock prover called");
+
+            halo2wasm.verify(proof);
+            console.log("Proof verified");
 
             // Call any other necessary functions or operations
 
