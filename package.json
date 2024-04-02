@@ -1,5 +1,5 @@
 {
-  "name": "next-wasm-workers",
+  "name": "halo2-circuits-js",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -9,15 +9,8 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@wasm-tool/wasm-pack-plugin": "^1.4.0",
-    "next": "11.0.0",
-    "react": "17.0.2",
-    "react-dom": "17.0.2"
-  },
-  "devDependencies": {
-    "@types/react": "17.0.11",
-    "eslint": "7.29.0",
-    "eslint-config-next": "11.0.0",
-    "typescript": "4.3.4"
+    "react": "^18",
+    "react-dom": "^18",
+    "next": "14.1.4"
   }
 }
