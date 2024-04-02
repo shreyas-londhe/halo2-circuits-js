@@ -1,62 +1,56 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
+
+import init, {
+    initThreadPool,
+    initPanicHook,
+    Halo2Wasm,
+    MyCircuit,
+} from "../rust/pkg/rust";
 
 export default function Home() {
     const [isRunning, setIsRunning] = useState(false);
-    const [wasmModule, setWasmModule] = useState(null);
 
-    useEffect(() => {
-        const isAtomicsWaitAllowed = () => {
-            try {
-                Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 0);
-                return true;
-            } catch (e) {
-                return false;
-            }
-        };
-
-        const loadWasmModule = async () => {
-            try {
-                const {
-                    default: init,
-                    initThreadPool,
-                    initPanicHook,
-                    Halo2Wasm,
-                    MyCircuit,
-                } = await import("../rust/pkg/rust");
-                await init();
-                initPanicHook();
-
-                if (isAtomicsWaitAllowed()) {
-                    await initThreadPool(2);
-                } else {
-                    console.warn(
-                        "Atomics.wait is not allowed in this context, multithreading disabled"
-                    );
-                }
-
-                setWasmModule({ Halo2Wasm, MyCircuit });
-            } catch (error) {
-                console.error("Error loading WASM module:", error);
-            }
-        };
-
-        loadWasmModule();
-    }, []);
+    const isAtomicsWaitAllowed = () => {
+        try {
+            Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 0);
+            return true;
+        } catch (e) {
+            return false;
+        }
+    };
 
     const runMain = async () => {
         setIsRunning(true);
         try {
-            if (wasmModule) {
-                const { Halo2Wasm, MyCircuit } = wasmModule;
-                const halo2wasm = new Halo2Wasm();
-                const myCircuit = new MyCircuit(halo2wasm);
-                myCircuit.run();
-                console.log("Main function completed successfully");
+            await init();
+            console.log("Wasm initialized");
+            initPanicHook();
+            console.log("Panic hook initialized");
+
+            if (isAtomicsWaitAllowed()) {
+                await initThreadPool(2);
+                console.log("Thread pool initialized");
             } else {
-                console.error("WASM module not loaded");
+                console.warn(
+                    "Atomics.wait is not allowed in this context, multithreading disabled"
+                );
             }
+
+            const halo2wasm = new Halo2Wasm();
+            console.log("Halo2Wasm instance created");
+            const myCircuit = new MyCircuit(halo2wasm);
+            console.log("MyCircuit instance created");
+            myCircuit.run();
+            console.log("MyCircuit run method called");
+
+            let stats = halo2wasm.getCircuitStats();
+            console.log("Circuit stats:", stats);
+
+            // Call any other necessary functions or operations
+
+            console.log("Main function completed successfully");
         } catch (error) {
             console.error("Error running main function:", error);
         } finally {
@@ -67,12 +61,8 @@ export default function Home() {
     return (
         <main>
             <h1>Hello, World!</h1>
-            <button onClick={runMain} disabled={isRunning || !wasmModule}>
-                {isRunning
-                    ? "Running..."
-                    : wasmModule
-                    ? "Run Main"
-                    : "Loading WASM..."}
+            <button onClick={runMain} disabled={isRunning}>
+                {isRunning ? "Running..." : "Run Main"}
             </button>
         </main>
     );
