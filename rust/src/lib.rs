@@ -28,7 +28,9 @@ impl MyCircuit {
     pub fn run(&mut self) {
         // Replace with your circuit, making sure to use `self.builder`
         let a = self.builder.borrow_mut().main(0).load_witness(Fr::from(1u64));
-        let b = self.builder.borrow_mut().main(0).load_witness(Fr::from(2u64));
-        self.gate.add(self.builder.borrow_mut().main(0), a, b);
+        let b = self.builder.borrow_mut().main(0).load_witness(Fr::from(69u64));
+        let sum = self.gate.mul(self.builder.borrow_mut().main(0), a, b);
+
+        self.builder.borrow_mut().assigned_instances[0].extend_from_slice(&[a, b, sum]);
     }
 }

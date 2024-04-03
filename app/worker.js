@@ -34,6 +34,15 @@ self.onmessage = async (e) => {
             myCircuit.run();
             console.log("MyCircuit run method called");
 
+            halo2wasm.useInstances();
+            console.log("Instances used");
+
+            let instanceValues = halo2wasm.getInstanceValues(0);
+            console.log("instanceValues:", instanceValues);
+
+            let instances = halo2wasm.getInstances(0);
+            console.log("instances:", instances);
+
             let stats = halo2wasm.getCircuitStats();
             console.log("Circuit stats:", stats);
 
@@ -43,20 +52,43 @@ self.onmessage = async (e) => {
             halo2wasm.loadParams(params);
             console.log("KZG params loaded");
 
+            const start = performance.now();
             halo2wasm.genVk();
-            console.log("Verification key generated");
+            const end = performance.now();
+            console.log(
+                "Verification key generated in",
+                end - start,
+                "milliseconds"
+            );
 
+            const pkStart = performance.now();
             halo2wasm.genPk();
-            console.log("Proving key generated");
+            const pkEnd = performance.now();
+            console.log(
+                "Proving key generated in",
+                pkEnd - pkStart,
+                "milliseconds"
+            );
 
+            const proofStart = performance.now();
             let proof = halo2wasm.prove();
-            console.log("Proof generated:", proof);
+            const proofEnd = performance.now();
+            console.log(
+                "Proof generated:",
+                proof,
+                "in",
+                proofEnd - proofStart,
+                "milliseconds"
+            );
 
-            halo2wasm.mock();
-            console.log("Mock prover called");
-
+            const verifyStart = performance.now();
             halo2wasm.verify(proof);
-            console.log("Proof verified");
+            const verifyEnd = performance.now();
+            console.log(
+                "Proof verified in",
+                verifyEnd - verifyStart,
+                "milliseconds"
+            );
 
             console.log("Main function completed successfully");
             self.postMessage({

@@ -7,7 +7,7 @@ edition = "2021"
 crate-type = ["cdylib"]
 
 [dependencies]
-halo2-wasm = { git = "https://github.com/axiom-crypto/halo2-browser.git", default-features = false }
+halo2-wasm = { git = "https://github.com/shreyas-londhe/halo2-browser.git", branch = "feat/wasm-instance", default-features = false }
 wasm-bindgen = "0.2.87"
 
 [features]
